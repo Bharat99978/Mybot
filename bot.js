@@ -1,23 +1,54 @@
 const TelegramBot = require('node-telegram-bot-api');
+
+// Replace with your own token
 const token = '7228147192:AAEg1GtZGTGSr_uag1BMi2V6hwytNBBYb8o';
 const bot = new TelegramBot(token, { polling: true });
 
-let counter = 0;
-let intervalId;
+let stopwatchInterval;
+let elapsedSeconds = 0;
 
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
-    bot.sendMessage(chatId, 'Starting count...');
 
-    intervalId = setInterval(() => {
-        counter += 1;
-        bot.sendMessage(chatId, `Minute: ${counter}`);
-    }, 60000); // Sends a message every minute (60000 ms)
+    if (stopwatchInterval) {
+        bot.sendMessage(chatId, "Stopwatch is already running.");
+        return;
+    }
+
+    bot.sendMessage(chatId, "Stopwatch started! Type /stop to stop it.");
+
+    // Start the stopwatch
+    stopwatchInterval = setInterval(() => {
+        elapsedSeconds++;
+        const hours = Math.floor(elapsedSeconds / 3600);
+        const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+        const seconds = elapsedSeconds % 60;
+        const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        bot.sendMessage(chatId, `Elapsed time: ${formattedTime}`);
+    }, 1000);
 });
 
 bot.onText(/\/stop/, (msg) => {
     const chatId = msg.chat.id;
-    clearInterval(intervalId);
-    counter = 0; // Reset counter if needed
-    bot.sendMessage(chatId, 'Counting stopped.');
+
+    if (!stopwatchInterval) {
+        bot.sendMessage(chatId, "Stopwatch is not running.");
+        return;
+    }
+
+    clearInterval(stopwatchInterval);
+    stopwatchInterval = null;
+    const hours = Math.floor(elapsedSeconds / 3600);
+    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+    const seconds = elapsedSeconds % 60;
+    const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    bot.sendMessage(chatId, `Stopwatch stopped! Final time: ${formattedTime}`);
+
+    // Reset elapsed time
+    elapsedSeconds = 0;
+});
+
+// Error handling
+bot.on("polling_error", (error) => {
+    console.error("Polling error:", error);
 });
