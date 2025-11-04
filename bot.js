@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 
 // Replace with your own token
-const token = '7228147192:AAEg1GtZGTGSr_uag1BMi2V6hwytNBBYb8o';
+const token = '7306535365:AAGdXyjdGK8d7_SHUEEubkohKU28YeMnHL8';
 const bot = new TelegramBot(token, { polling: true });
 
 let stopwatchInterval;
